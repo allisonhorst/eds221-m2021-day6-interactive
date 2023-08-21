@@ -1,26 +1,13 @@
 ---
-title: "Day 6 interactive session (R version): data wrangling with tidyr and dplyr"
-output: html_document
+title: "key_week3_Day1_inter"
+format: html
+editor: visual
 ---
-
-# Part 1: Reshaping & cleaning with `tidyr` functions
-
-## Attach packages
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
-```
-
-```{r}
-library(tidyverse)
-library(here)
-library(janitor) # You may need to install janitor (install.packages("janitor"))
-```
 
 ## Read in the data
 
 ```{r}
-# Read in World Bank development indicator data and metadata, have to read_ not read., read_ has more options, doesnt initialy showup when reading in its in a data sub folder not in main, starts in root o fproj by using here 
+# Read in World Bank development indicator data and metadata
 wb_indicators <- readr::read_csv(here("data", "wb_indicators.csv"), na = c("..", ""))
 wb_metadata <- readr::read_csv(here("data", "wb_indicators_metadata.csv"))
 ```
@@ -38,17 +25,9 @@ First thing's first: is the data in `wb_indicators` tidy? Why not?
 
 The biggest thing that stands out: the single variable of *year* is spread out over many columns. This means the data is in *wide* format. To make it tidy, we're going to need to convert it to long format.
 
--   year should be once column and multiple variables trapped into series name col.
-
--   each variable in a single col, each observation in single row, one value in a single cell
-
--   data wrangling sequence up to 7 or 8 steps based on readability
-
-### melt years first
-
 ```{r}
 wb_indicators_long <- wb_indicators %>% 
-  tidyr::pivot_longer(cols = '2001 [YR2001]':'2020 [YR2020]', # Which columns to squish, need quation if you refer to col that might be problematic startign with number or having space, lets r know its a col name 
+  tidyr::pivot_longer(cols = '2001 [YR2001]':'2020 [YR2020]', # Which columns to squish
                names_to = "year", # The original column names are squished into this column
                values_to = "indicator_value") # The values are correctly aligned in this column
 
@@ -56,7 +35,7 @@ wb_indicators_long <- wb_indicators %>%
 # View(wb_indicators_long) # Why do I comment this out or run it in the Console? 
 
 head(wb_indicators_long)
-view(wb_indicators_long)
+
 ```
 
 ## Clean up that year column
@@ -66,67 +45,38 @@ We'll use `tidyr::separate()` to separate the `year` column.
 ```{r}
 wb_data_clean <- wb_indicators_long %>% 
   tidyr::separate(col = year, into = c("year", "year_chr"), sep = " ") %>% 
-  dplyr::select(-year_chr, -'Country Code', -'Series Code') # This drops a few redundant columns (caution here...best to leave things if you're not sure), dont need country code becasue fine with naame but might want it, can select ranges, sequences of variabels but could ask exlue variables, negative implies remove, select is columns and filter is filter or exluding rows base don whether it attaches your ocnditions or not, dont need quatiations around year_chr because its already created and doesnt have spaces 
+  dplyr::select(-year_chr, -'Country Code', -'Series Code') # This drops a few redundant columns (caution here...best to leave things if you're not sure)
 
 head(wb_data_clean)
-view(wb_data_clean)
-```
-
-```{r}
-view(wb_data_clean)
 ```
 
 ## Long-to-wide: indicator variables
 
 Our data *still* aren't quite tidy! Why?
 
-Notice that we have multiple variables that were measured (our different indicators)(indicators...access.co2...etc) all in a single column. This is a scenario where there are multiple variables in a single column. To be **Tidy**, we want each variable to live in just *one* column.
+Notice that we have multiple variables that were measured (our different indicators) all in a single column. This is a scenario where there are multiple variables in a single column. To be **Tidy**, we want each variable to live in just *one* column.
 
 That means we're going to need to widen this data. We'll do that using `tidyr::pivot_wider()`.
 
 ```{r}
 wb_data_tidy <- wb_data_clean %>% 
-  tidyr::drop_na('Series Name') %>% #nothing to do with data being tidy, jsut any value missing a series you msut drop 
-  tidyr::pivot_wider(names_from = 'Series Name', values_from = indicator_value) %>% # Pivot to wide format
-  dplyr::rename(county = "Country Name", 
-                access_fuels_pp = "Access to clean fuels and technologies for cooking (% of pop)",
-                acccess_electricity = "access to electricity",  
-                co2_emissions_kt = "CO2",
-                fossil_fuel_cons_pt = "fossil fuel consumption",
-                water_stress = "level of water stress") %>%
-  dplyr::mutate(year = as.numeric(year))
-#independent of position, deosnt matter where they are, renaming col based on namess 
+  tidyr::drop_na('Series Name') %>% 
+  tidyr::pivot_wider(names_from = 'Series Name', values_from = indicator_value) # Pivot to wide format
 
-
-#if columns switched around its not dependant on location
-#not changing this based on position 
-
-view(wb_data_tidy)
-```
-
-```{r}
-ggplot(data = wb_data_clean, aes(x = year, y = co2_emissions_kt)) + 
-  geom_line(aes(colour = country)) + 
-  theme(legend.position = none )
+head(wb_data_tidy)
 ```
 
 ## Those column names are a nightmare
 
 We can reassign all names as follows (in this order):
 
--   data is tidy!!!!!!
+```{r}
+names(wb_data_tidy) <- c("country", "year", "access_clean_fuels_pp", "access_electricity_pp", "co2_emissions_kt", "fossil_fuel_cons_pt", "water_stress")
 
-    ```{r}
-    view(wb_data_tidy)
-    ```
-
-#redo steps that were given in key
+head(wb_data_tidy)
+```
 
 Or, we'll learn how to use `dplyr::rename()` soon...
-
--   new new
-
--   
 
 # Part 2: More data wrangling with `dplyr`
 

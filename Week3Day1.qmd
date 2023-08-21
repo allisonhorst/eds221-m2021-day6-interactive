@@ -1,0 +1,117 @@
+---
+title: "Week 3 Day 1 Interactive"
+format: html
+editor: visual
+---
+
+## Warm up
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(janitor)
+library(here)
+```
+
+```{r}
+
+
+#seq along will always go from 1 to length of vector, ector starting at 1 oging to length seq along does that
+animals <- c("brown bear", "red bird", "yellow duck", "blue horse")
+
+#iterates 1, 2, 3 fro 4 animals 
+for(i in 1:(length(animals)- 1)) {
+  print(paste(animals[i], animals[i-1], 
+              "what do you see? I see a ", animals [i-1], "looking at me"))
+  
+
+```
+
+## Tidy Verse
+
+predictable way of organizing where:
+
+-   each variable is a column
+
+-   each observation is a row
+
+-   each cell contains a single value
+
+-   variable: characteristic that is being measured, counted, or described with data, like car type, salinity, year, population, or whale mass
+
+-   observation: single data point for which the measure, count or description of one or more variables is recorded for example if you're recording variables height, mass, and color of dragons then each individual drage should have own row
+
+-   value: the recorded measure, count or description of a variable
+
+```{=html}
+<!-- -->
+```
+-   does each row represent a single feature?
+
+Why inst it tidy?
+
+-   2005 and 2006a are under a variable, each variable205 and 2006 are a value of a variable rather than own column
+
+-   pivot wider: take a wide format of data rather than have variable names with one column its separated to two col,
+
+-   reshaping: ignite things from separate columns
+
+-   separating or uniting columns
+
+-   completing cases
+
+-   dropping observations with missings and more
+
+    EE
+
+```{r}
+
+```
+
+pivot: single variable like income spread over multiple columns good hint is that values of a single variable are showing up column name then wanna use pivot longer, gather or melt columns
+
+met tidyr:: pivot\_
+
+use tidyr:: pivot_longer () to gather columns
+
+use tidyr:: pivot wider() to spread columns converting from long to wide format , all groups existing in a column and each should be in own column, multiple variables in a single column, look fo different variable names spread into individual col
+
+Pivot longer
+
+```{r}
+dogs_longer <- dogs %>%
+  tidyr::pivot_longer(week_1:week_3, #what columns that need to be melted together 
+                      names_to = week,  
+                      valuse_to= miles) #new col called miles 
+#each row should have a single value!! 
+#moves value and names into new column 
+#if not feeding a data frame the first argument would be... pivot_longer(dogs...) to start
+#try to pipe into everything 
+
+
+```
+
+Pivot wider
+
+```{r}
+#multiple variabels ina. singel column and have to spread them 
+planets_long <- planets %>%
+  tidyr::pivot_wider(names_from = variable, values_from =  value)
+#whatevr column to get name from, wil identify unique group like pop and radius and create them as new col names, within variabel colm two unique categoreis pop adn radius so give new col and where value is from 
+                
+```
+
+rules for data being tidy, each cell should only contain a single value, measurement or description of a characteristic, multiple variables populating cells in same col
+
+## Tidy separate
+
+```{r}
+starwars %>% 
+  separate(col = name, 
+           into = c("first_name", "last_name"), 
+           sep = " ") #sep = is what i should look like to separate, space in name col
+```
+
+```{r}
+
+```
