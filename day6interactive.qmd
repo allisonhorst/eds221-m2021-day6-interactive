@@ -38,7 +38,10 @@ wb_indicators_tidy <- wb_indicators_clean2 %>%
   tidyr::drop_na(`Series Name`) %>% 
   tidyr::pivot_wider(names_from = `Series Name`, 
                      values_from = indicator_value) %>%
-  dplyr::rename(country = "Country Name", access_fuels_pp = "Access to clean fuels and technologies for cooking (% of population)", access_electricity_pp = "Access to electricity (% of population)" , co2_emissions_kt =  "CO2 emissions (kt)" , fossil_fuel_cons_pt = "Fossil fuel energy consumption (% of total)", water_stress = "Level of water stress: freshwater withdrawal as a proportion of available freshwater resources")
+
+  dplyr::rename(country = "Country Name", access_fuels_pp = "Access to clean fuels and technologies for cooking (% of population)", access_electricity_pp = "Access to electricity (% of population)" , co2_emissions_kt =  "CO2 emissions (kt)" , fossil_fuel_cons_pt = "Fossil fuel energy consumption (% of total)", water_stress = "Level of water stress: freshwater withdrawal as a proportion of available freshwater resources") %>% 
+  dplyr::mutate(year = as.numeric(year))
+
 ```
 # ```{r}
 # names(wb_indicators_tidy) <- c("country", 
@@ -50,6 +53,6 @@ wb_indicators_tidy <- wb_indicators_clean2 %>%
 #                                "water_stress")
 # ```
 ```{r}
-
+ggplot(data = wb_indicators_tidy, aes(x=year, y=co2_emissions_kt))+geom_line(aes(color = country)) + theme(legend.position = "none")
 ```
 
