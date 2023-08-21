@@ -7,5 +7,39 @@ editor: visual
 ##World bank Data
 
 ```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+```
 
+```{r}
+world_bank_data <- read_csv(here('data', "wb_indicators.csv"), na = c("..", "NA"))
+```
+
+```{r}
+#pivot longer the years
+pivot_world_bank_data <- pivot_longer(world_bank_data, cols= `2001 [YR2001]`:`2020 [YR2020]`, names_to = "Years") %>% 
+  separate(col=Years, into =c("year", "year_chr", sep= " ")) %>% 
+  select(-c("year_chr", `Country Code`, `Series Code`))
+
+#pivot variables
+pivot_values_world_bank_data <- pivot_world_bank_data %>% 
+                                tidyr::drop_na(`Series Name`) %>% 
+                                filter(`Series Name` != "")
+
+
+clean_data <- pivot_values_world_bank_data %>%  pivot_wider(names_from = `Series Name`, values_from = value) %>% 
+  rename(country = "Country Name",
+         clean_fuels = "Access to clean fuels and technologies for cooking (% of population)",
+         electricity_pp = "Access to electricity (% of population)",
+         co2_emission_kt= "CO2 emissions (kt)",
+         fossil_fuel_cons_pt = "Fossil fuel energy consumption (% of total)",
+         water_stress = "Level of water stress: freshwater withdrawal as a proportion of available freshwater resources") 
+
+```
+
+```{r}
+ggplot(clean_data, aes(as.numeric(year), co2_emission_kt, color=country)) + 
+  geom_line()+
+  theme(legend.position = "none")
 ```
