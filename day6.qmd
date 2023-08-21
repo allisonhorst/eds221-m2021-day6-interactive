@@ -1,0 +1,11 @@
+---
+title: "Day 6 interactive"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+```
