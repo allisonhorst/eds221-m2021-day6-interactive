@@ -1,0 +1,16 @@
+---
+title: "Warm up"
+format: html
+editor: visual
+---
+
+## 
+
+```{r}
+vector <- c("brown bear", "red bird", "yellow duck", "blue horse")
+
+for (i in 1:(length(vector) - 1)) {
+  cat(vector[i], ",", vector[i], ",", "what do you see? I see a", vector[i+1], "looking at me",
+      "\n")
+}
+```

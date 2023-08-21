@@ -1,0 +1,54 @@
+---
+title: "EDS221 Day 6 Interactive"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(dplyr)
+```
+
+```{r}
+wb_indicators <- read_csv(here::here("data", "wb_indicators.csv"), na = c("..", ""))
+```
+
+```{r}
+wb_indicators_long <- wb_indicators %>% 
+  tidyr::pivot_longer(cols = `2001 [YR2001]`:`2020 [YR2020]`,
+                      names_to = "year",
+                      values_to = "indicator_value")
+
+```
+
+```{r}
+wb_indicators_clean <- wb_indicators_long %>% 
+  tidyr::separate(col = year, into = c("year", "year_chr"), sep = " ") %>% 
+  dplyr::select(-year_chr, -'Country Code', -'Series Code') # removes cols 
+```
+
+```{r}
+wb_indicators_tidy <- wb_indicators_clean %>% 
+  tidyr::drop_na('Series Name') %>% 
+  tidyr::pivot_wider(names_from = 'Series Name',
+                     values_from = 'indicator_value') %>% 
+  dplyr::rename(country = "Country Name",
+                access_fuels_pp = "Access to clean fuels and technologies for cooking (% of population)",
+                access_electricity_pp = "Access to electricity (% of population)",
+                co2_emissions_kt = "CO2 emissions (kt)",
+                fossil_fuel_cons_pt = "Fossil fuel energy consumption (% of total)",
+                water_stress = "Level of water stress: freshwater withdrawal as a proportion of available freshwater resources")
+```
+
+```{r}
+# # beware of naming columns, as could run into issues updating columns later!
+# names(wb_indicators_tidy) <- c("country",
+#                                "year",
+#                                "access_clean_fuels_pp",
+#                                "access_electricity_pp",
+#                                "co2_emissions_kt",
+#                                "fossil_fuel_cons_pt",
+#                                "water_stress")
+```

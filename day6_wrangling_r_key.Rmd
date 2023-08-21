@@ -27,8 +27,8 @@ wb_metadata <- readr::read_csv(here("data", "wb_indicators_metadata.csv"))
 
 ### Always look at it: 
 ```{r}
-# View(wb_indicators)
-# View(wb_metadata)
+View(wb_indicators)
+View(wb_metadata)
 ```
 ## Some basic tidying: wide-to-long so each variable is in a single column
 
