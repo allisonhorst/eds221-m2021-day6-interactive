@@ -1,0 +1,75 @@
+---
+title: "eds-221-day6-comp1"
+format: html
+editor: visual
+---
+
+## Warm-Up
+
+```{r}
+animals <- c("brown bear", "red bird", "yellow duck", "blue horse")
+
+for (i in 1:(length(animals) -1)) {
+  
+  print(paste(animals[i], animals[i], "what do you see?", "I see a", animals[i + 1], "looking at me"))
+}
+```
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+```{r}
+# last part is saying read in ".." and "" as NA
+wb_indicators <- read_csv(here("data", "wb_indicators.csv"), na = c("..", ""))
+```
+
+```{r}
+# melt all year columns into one column and populate with all values in another column
+
+wb_indicators_long <- wb_indicators |> 
+  pivot_longer(col = `2001 [YR2001]`: `2020 [YR2020]`, 
+               names_to = 'year',
+               values_to = 'indicator_value')
+```
+
+```{r}
+# separate() 'year' column into 2 separate columns of year and year character
+# dplyr() is saying "keep all columns except for the selected columns". Could use filter() if keeping / excluding rows instead of columns
+
+wb_indicators_clean <- wb_indicators_long |> 
+  tidyr::separate(col = year, into = c("year", "year_chr"), sep = " ") |> 
+  dplyr::select(-year_chr, -`Country Code`, -`Series Code`)
+```
+
+```{r}
+# drop_na says do a complete deletion of any row without a series name ('Series Name' is name of the column)
+# pivot_wider() is going to look for each different level within "Series Name" and make each one its own column. names_from tells the column to pick from. values_from tells what column to pick values from 
+
+wb_indicators_tidy <- wb_indicators_clean |> 
+  tidyr::drop_na('Series Name') |> 
+  tidyr::pivot_wider(names_from = 'Series Name', 
+                     values_from = indicator_value) |> 
+  dplyr::rename(country = "Country Name", access_fuels_pp = "Access to clean fuels and technologies for cooking (% of population)", access_electricity_pp = "Access to electricity (% of population)", co2_emissions_kt = "CO2 emissions (kt)", fossil_fuel_cons_pt = "Fossil fuel energy consumption (% of total)", water_stress = "Level of water stress: freshwater withdrawal as a proportion of available freshwater resources") |> 
+  dplyr::mutate(year = as.numeric(year))
+```
+
+```{r}
+# This way is basing the column names purely on position, which is dangerous
+
+names(wb_indicators_tidy) <- c("country", "year", "access_clean_fuels_pp",
+                               "access_electricity_pp", "co2_emissions_kt",
+                               "fossil_fuel_cons_pt", "water_stress")
+# Instead look above : use dplyr::rename() for a better more robust way to rename columns -> independent on position of columns 
+
+
+```
+
+```{r}
+# this one isn't currently working
+ggplot(data = wb_indicators_tidy, aes(x = year, y = co2_emissions_kt)) +
+         geom_line(aes(color = country)) +
+  theme(legend.position = )
+```
