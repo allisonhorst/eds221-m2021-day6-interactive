@@ -1,0 +1,38 @@
+---
+title: "Wrangling Tidyverse"
+author: "Anna Ramji"
+format: html
+editor: visual
+---
+
+## Wrangling Tidyverse
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(here)
+```
+
+## Warm up:
+
+```{r}
+storybook_vec <- c("brown bear", "red bird", "yellow duck", "blue horse")
+
+book_pages <- function(bear, bird, duck, horse) {
+  print(paste0(bear, ", ", bear, ", what do you see? I see a ", bird, " looking at me. ", bird, ", ", bird, ", what do you see? I see a ", duck, " looking at me. ", duck, ", ", duck, ", what do you see? I see a ", horse, " looking at me."))
+}
+```
+
+```{r}
+book_pages(storybook_vec[1], storybook_vec[2], storybook_vec[3], storybook_vec[4])
+```
+
+```{r}
+for (i in 1:(length(storybook_vec) - 1)) {
+  print(paste0(storybook_vec[i], ", ", storybook_vec[i], ", what do you see? I see a ", storybook_vec[i+1], " looking at me."))
+}
+```
+
+## Part 1: reshaping and tidying basics
+
+### Wide-to-long
