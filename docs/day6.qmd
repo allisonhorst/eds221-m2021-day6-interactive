@@ -1,0 +1,11 @@
+---
+title: "Day 6 Wrangling"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+```
