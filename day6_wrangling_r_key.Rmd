@@ -3,7 +3,6 @@ title: "Day 6 interactive session (R version): data wrangling with tidyr and dpl
 output: html_document
 ---
 
-
 # Part 1: Reshaping & cleaning with `tidyr` functions
 
 ## Attach packages
@@ -19,22 +18,25 @@ library(janitor) # You may need to install janitor (install.packages("janitor"))
 ```
 
 ## Read in the data
+
 ```{r}
 # Read in World Bank development indicator data and metadata
 wb_indicators <- readr::read_csv(here("data", "wb_indicators.csv"), na = c("..", ""))
 wb_metadata <- readr::read_csv(here("data", "wb_indicators_metadata.csv"))
 ```
 
-### Always look at it: 
+### Always look at it:
+
 ```{r}
 # View(wb_indicators)
 # View(wb_metadata)
 ```
+
 ## Some basic tidying: wide-to-long so each variable is in a single column
 
-First thing's first: is the data in `wb_indicators` tidy? Why not? 
+First thing's first: is the data in `wb_indicators` tidy? Why not?
 
-The biggest thing that stands out: the single variable of *year* is spread out over many columns. This means the data is in *wide* format. To make it tidy, we're going to need to convert it to long format. 
+The biggest thing that stands out: the single variable of *year* is spread out over many columns. This means the data is in *wide* format. To make it tidy, we're going to need to convert it to long format.
 
 ```{r}
 wb_indicators_long <- wb_indicators %>% 
@@ -50,7 +52,7 @@ head(wb_indicators_long)
 
 ## Clean up that year column
 
-We'll use `tidyr::separate()` to separate the `year` column. 
+We'll use `tidyr::separate()` to separate the `year` column.
 
 ```{r}
 wb_data_clean <- wb_indicators_long %>% 
@@ -62,11 +64,12 @@ head(wb_data_clean)
 
 ## Long-to-wide: indicator variables
 
-Our data *still* aren't quite tidy! Why? 
+Our data *still* aren't quite tidy! Why?
 
-Notice that we have multiple variables that were measured (our different indicators) all in a single column. This is a scenario where there are multiple variables in a single column. To be **Tidy**, we want each variable to live in just *one* column. 
+Notice that we have multiple variables that were measured (our different indicators) all in a single column. This is a scenario where there are multiple variables in a single column. To be **Tidy**, we want each variable to live in just *one* column.
 
-That means we're going to need to widen this data. We'll do that using `tidyr::pivot_wider()`. 
+That means we're going to need to widen this data. We'll do that using `tidyr::pivot_wider()`.
+
 ```{r}
 wb_data_tidy <- wb_data_clean %>% 
   tidyr::drop_na('Series Name') %>% 
@@ -77,7 +80,7 @@ head(wb_data_tidy)
 
 ## Those column names are a nightmare
 
-We can reassign all names as follows (in this order): 
+We can reassign all names as follows (in this order):
 
 ```{r}
 names(wb_data_tidy) <- c("country", "year", "access_clean_fuels_pp", "access_electricity_pp", "co2_emissions_kt", "fossil_fuel_cons_pt", "water_stress")
@@ -91,11 +94,12 @@ Or, we'll learn how to use `dplyr::rename()` soon...
 
 ## `dplyr::filter()`
 
-Use `dplyr::filter()` to keep or exclude rows based on your conditions. 
+Use `dplyr::filter()` to keep or exclude rows based on your conditions.
 
 **Some examples:**
 
 I only want to keep observations from the dataset above for "United States":
+
 ```{r}
 us_wb <- wb_data_tidy %>% 
   filter(country == "United States")
@@ -112,14 +116,15 @@ us_mx_bz <- wb_data_tidy %>%
 unique(us_mx_bz$country)
 ```
 
-I want to keep observations if the country is "Guatemala" OR the year is 2020: 
+I want to keep observations if the country is "Guatemala" OR the year is 2020:
+
 ```{r}
 guatemala_or_2020 <- wb_data_tidy %>% 
   filter(country == "Guatemala" | year == 2020)
 ```
 
-
 I want to keep observations in the year is 2010 and CO2 emissions is greater than 10,000kt:
+
 ```{r}
 co2_2010_over10k <- wb_data_tidy %>% 
   filter(year == 2010, co2_emissions_kt > 10000)
@@ -127,7 +132,7 @@ co2_2010_over10k <- wb_data_tidy %>%
 
 ## `dplyr::select()`
 
-Select (or exclude) columns using `dplyr::select()`. Put a minus sign (-) in front of a column name or position to exclude it. 
+Select (or exclude) columns using `dplyr::select()`. Put a minus sign (-) in front of a column name or position to exclude it.
 
 ```{r}
 nicaragua_co2 <- wb_data_tidy %>% 
@@ -135,17 +140,16 @@ nicaragua_co2 <- wb_data_tidy %>%
   select(year, co2_emissions_kt)
 ```
 
-
 Exclude the water_stress and access_electricity_pp columns:
+
 ```{r}
 wb_subset <- wb_data_tidy %>% 
   select(-c(water_stress, access_electricity_pp))
 ```
 
-
 ## `dplyr::rename()`
 
-Use `dplyr::rename()` to rename one or more columns, in the order `new_name = old_name`. 
+Use `dplyr::rename()` to rename one or more columns, in the order `new_name = old_name`.
 
 ```{r}
 wb_newnames <- wb_data_tidy %>% 
@@ -154,9 +158,10 @@ wb_newnames <- wb_data_tidy %>%
 
 ## `dplyr::mutate()`
 
-Use `dplyr::mutate()` to add a new column, or transform an existing one. 
+Use `dplyr::mutate()` to add a new column, or transform an existing one.
 
 Example: to change the class of a variable (careful - this overwrites the existing column!)
+
 ```{r}
 # Check the class of year:
 class(wb_data_tidy$year) # Character! Let's change it. 
@@ -169,6 +174,7 @@ class(wb_data_tidy$year)
 ```
 
 Example: Add a new column that has co2 in TONS (instead of kilotons):
+
 ```{r}
 wb_co2_tons <- wb_data_tidy %>% 
   mutate(co2_tons = co2_emissions_kt * 1000)
@@ -178,9 +184,9 @@ head(wb_co2_tons)
 
 ## `dplyr::group_by() %>% summarize()`
 
-To perform one or more functions on data by *group*, returning a nice summary table, use `group_by` + `summarize()`. 
+To perform one or more functions on data by *group*, returning a nice summary table, use `group_by` + `summarize()`.
 
-Example: find the total reported co2 emissions (kt) for 2001 - 2020 from each country: 
+Example: find the total reported co2 emissions (kt) for 2001 - 2020 from each country:
 
 ```{r}
 co2_total <- wb_data_tidy %>% 
@@ -188,8 +194,8 @@ co2_total <- wb_data_tidy %>%
   summarize(total_co2_kt = sum(co2_emissions_kt, na.rm = TRUE))
 ```
 
-
 Example: find the total co2 emissions (kt) across all country for *each year* from 2001 - 2020:
+
 ```{r}
 co2_annual <- wb_data_tidy %>% 
   group_by(year) %>% 
@@ -204,18 +210,20 @@ ggplot(data = co2_annual, aes(x = year, y = annual_total_co2_kt)) +
 
 # Part 3: Putting things together
 
-We've learned a bunch of different useful functions for data wrangling in the {tidyverse}. But this may still feel a bit tedious. 
+We've learned a bunch of different useful functions for data wrangling in the {tidyverse}. But this may still feel a bit tedious.
 
-Often, for readability and efficiency, we may want to string together different steps into a sequence. We can do that using the pipe operator (`%>%` in the tidyverse, or `|>` is the sparkly new native pipe in R). 
+Often, for readability and efficiency, we may want to string together different steps into a sequence. We can do that using the pipe operator (`%>%` in the tidyverse, or `|>` is the sparkly new native pipe in R).
 
-Let's take our raw data that we initially read in: 
+Let's take our raw data that we initially read in:
+
 ```{r}
 head(wb_indicators)
 ```
 
-Let's tidy this up in a single sequence, with the pipe operator between. 
+Let's tidy this up in a single sequence, with the pipe operator between.
 
 REMEMBER: Look at what you've done after **every step in a sequence.**
+
 ```{r}
 wb_tidy <- wb_indicators %>% 
   tidyr::pivot_longer(cols = `2001 [YR2001]`:`2020 [YR2020]`,
@@ -238,7 +246,6 @@ wb_tidy <- wb_indicators %>%
 # Recall you can get the names of columns easily using names(df)
 ```
 
-**Some questions:** How long should a piped sequence be before I store the output and start a new piped sequence? Can a piped sequence be too long? Can I always pipe into everything? 
+**Some questions:** How long should a piped sequence be before I store the output and start a new piped sequence? Can a piped sequence be too long? Can I always pipe into everything?
 
 ## End Day 6 Interactive Session
-
