@@ -3,6 +3,8 @@ title: "Wrangling Tidyverse"
 author: "Anna Ramji"
 format: html
 editor: visual
+execute:
+  warnings: FALSE
 ---
 
 ## Wrangling Tidyverse
@@ -35,4 +37,125 @@ for (i in 1:(length(storybook_vec) - 1)) {
 
 ## Part 1: reshaping and tidying basics
 
+### Reading in the data
+
+```{r}
+wb_indicators <- read_csv(here("data", "wb_indicators.csv"), na = c("..", ""))
+wb_metadata <- read_csv(here("data", "wb_indicators_metadata.csv"))
+```
+
 ### Wide-to-long
+
+We see that years - a single variable - is spread out over multiple columns. We'll want to reshape this data frame from wide-to-long format so that year is only in a single column to make it Tidy.
+
+```{r}
+wb_indicators_long <- wb_indicators |>  
+  pivot_longer(cols = `2001 [YR2001]`:`2020 [YR2020]`, # Which columns to melt
+               names_to = 'year', # The original column names are squished into this column
+               values_to = 'indicator_value') # The values are correctly aligned in this column
+
+# Check it out (always):
+# View(wb_indicators_long) # Why do I comment this out or run it in the Console? (becauae we don't want it to show up in the final rendered output!)
+```
+
+### Cleaning the Year column
+
+We can see that the year is stored in a weird format (e.g. `2018 [YR2018]`) that's going to make our life difficult if we want to, for example, use year as a number to plot changes in the indicator values over time.
+
+Let's **separate** the information in the `year` column so that we can just keep the nice 4-digit year as a number.
+
+separate() based on a space (you could also separate it at a space, then square bracket, after a certain number of characters, etc. )
+
+```{r}
+wb_indicators_clean <- wb_indicators_long |> 
+  separate(col = year, into = c("year", "year_chr"), sep = " ") |> 
+# always check the output!
+  select(-year_chr, -`Country Code`, -`Series Code`)
+
+# unique(wb_indicators_clean$`Series Name`)
+```
+
+note: get used to running the unique() function in console
+
+we will use this info -- that there is an NA value/category for the series name variable -- if we don't have this determinant that tells us the units of the corresponding values, we can't make sense of those values
+
+### Convert indicators to variables (long to wide)
+
+Our data *still* aren't quite tidy! Why?
+
+Notice that we have multiple variables that were measured (our different indicators) all in a single column. This is a scenario where there are multiple variables in a single column. To be **Tidy**, we want each variable to live in just *one* column.
+
+Series name -- should be individual columns (they're variables!)
+
+```{r}
+wb_indicators_tidy <- wb_indicators_clean |> 
+  tidyr::drop_na(`Series Name`)  |> 
+# check that NA was dropped > unique(wb_indicators_tidy$`Series Name`)
+  tidyr::pivot_wider(names_from = `Series Name`, values_from = indicator_value) |> 
+# don't actually need to put new column names in quotes
+     dplyr::rename(country = `Country Name`,
+                year = year,
+                access_clean_fuels_pp = `Access to clean fuels and technologies for cooking (% of population)`,
+                access_electricity_pp = `Access to electricity (% of population)`,
+                co2_emissions_kt = `CO2 emissions (kt)`,
+                fossil_fuels_cons_pt = `Fossil fuel energy consumption (% of total)`,
+                water_stress = `Level of water stress: freshwater withdrawal as a proportion of available freshwater resources`
+                ) |> 
+  dplyr::mutate(year = as.numeric(year))
+
+  
+  
+```
+
+### Renaming columns
+
+Our column names are now a nightmare. We can reassign all names as follows (in this order):
+
+c("country", "year", "access_clean_fuels_pp", "access_electricity_pp", "co2_emissions_kt", "fossil_fuel_cons_pt", "water_stress")
+
+we'll use dplyr rename later on. for now...
+
+```{r}
+# names(wb_indicators_tidy) <- c("country",
+#                                "year",
+#                                "access_clean_fuels_pp",
+#                                "access_electricity_pp",
+#                                "co2_emissions_kt",
+#                                "fossil_fuel_cons_pt",
+#                                "water_stress")
+# # this is a risky way to reassign column names, as it is only tied to the position or order of the columns. instead, it would be better to tell our code which column we are renaming individually / based on the original name. rearranging and sorting our data should not break our code. 
+# head(wb_indicators_tidy)
+```
+
+we would provide more context (the original names of the columns) in our markdown doc.
+
+### Using dplyr rename
+
+(actually did this above \^\^ so it's all in one piped chunk :))) )
+
+```{r}
+# use names to check column names
+# > names(wb_indicators_tidy)
+
+# actually going to pipe this back up in a previous cell ^^^
+
+# wb_indicators_tidy |> 
+#   dplyr::rename("country" = `Country Name`,
+#                 "year" = year,
+#                 "access_clean_fuels_pp" = `Access to clean fuels and technologies for cooking (% of population)`,
+#                 "access_electricity_pp" = `Access to electricity (% of population)`,
+#                 "co2_emissions_kt" = `CO2 emissions (kt)`,
+#                 "fossil_fuels_cons_pt" = `Fossil fuel energy consumption (% of total)`,
+#                 "water_stress" = `Level of water stress: freshwater withdrawal as a proportion of available freshwater resources`
+#                 )
+```
+
+## Lets make a graph!
+
+```{r}
+ggplot(data = wb_indicators_tidy, aes(x = year, y = co2_emissions_kt)) +
+  geom_line(aes(color = country) ,show.legend = FALSE) 
+# +
+#  theme(legend.position = "none")
+# ideally we would make this an interactive plot with a dropdown menue, where a user could select which country they're interested in 
+```
