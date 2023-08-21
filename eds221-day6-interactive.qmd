@@ -1,0 +1,41 @@
+---
+title: "eds221-day6-interactive"
+format: html
+editor: visual
+---
+
+## Practice:
+
+```{r}
+animals <- c("brown bear", "red bird", "yellow duck", "blue horse")
+for (i in 1:(length(animals) - 1)){
+print(paste(animals[i], animals[i], "what do you see? I see a", animals[i+1],"looking at me."))
+}
+```
+
+### Tidy Data! 
+
+Using tidyr in the tidyverse package:
+
+-pivot_longer: if values are showing up as column names. this gathers variables spread over multiple columns and melts them into one column
+
+-pivot_wider: spreads columns when there are multiple variables in one column
+
+```{r}
+#Structure:
+#  tidyr::pivot_longer(data, range of columns, names_to = what we are calling the new column, values_to = where we want to put the values aka what we want to call that column)
+#  tidyr::pivot_longer(data, names_from = where are the names of the new columns coming from, values_to = what column are the values in)
+```
+
+-tidyr::separate() separates elements in a single column into multiple columns
+
+```{r}
+#Structure:
+# separate(data, col = column of values I need to separate into multiple columns, into = what the new names are that I want as columns, sep = the character to look for that defines the separation)
+```
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+```
