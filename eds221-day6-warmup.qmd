@@ -1,0 +1,17 @@
+---
+title: "eds-221-day6-warmup"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+animal <- c("brown bear", "red bird", "yellow duck", "blue horse")
+
+for (i in 1: (length(animal)-1)) {
+    print(paste(animal[i],",", animal[i], "what do you see? I see a", animal[i+1], "looking at me." ))
+}
+```
