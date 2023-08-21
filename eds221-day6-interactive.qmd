@@ -39,3 +39,63 @@ library(tidyverse)
 library(here)
 library(janitor)
 ```
+
+```{r}
+#First, let's read in the data
+wb_indicators <- read_csv(here("data", "wb_indicators.csv"), na = c("..", ""))
+```
+
+## Data Wrangling
+
+```{r}
+wb_indicators_long <- wb_indicators %>% 
+  pivot_longer(cols = `2001 [YR2001]`:`2020 [YR2020]`,
+               names_to = "Year", 
+               values_to = "indicator_value")
+```
+
+```{r}
+#Let's clean up the year column because there is redundant naming in that column:
+wb_indicators_clean <- wb_indicators_long %>% 
+separate(col = "Year", into = c("Year", "Year_chr"), sep = " ")
+```
+
+```{r}
+#Now we can remove the columns we don't need/want. Select is for keeping/excluding columns. We can put a minus sign in front of the column names to remove them those.
+wb_indicators_clean <- wb_indicators_long %>% 
+tidyr::separate(col = "Year", into = c("Year", "Year_chr"), sep = " ") %>% 
+dplyr::select(-Year_chr, -`Country Code`, -`Series Code`)
+```
+
+Helpful Note: We can use the unique() function to see what unique values are within a single column
+
+```{r}
+#Lets use pivot wider to change the multi-variable column to each have their own columns. We can also remove the na value option from a single column. Note: this will remove all data from that row if you remove the nas so be careful with the drop_na function. 
+
+wb_indicators_tidy <- wb_indicators_clean %>% 
+  tidyr::drop_na(`Series Name`) %>% 
+  tidyr::pivot_wider(names_from = `Series Name`,
+                     values_from = indicator_value)
+```
+
+```{r}
+#I can update the column names if I'd like to by adding the dplyr rename function. Format is new name = "old name". 
+names(wb_indicators_tidy)
+
+wb_indicators_tidy <- wb_indicators_clean %>% 
+  tidyr::drop_na(`Series Name`) %>% 
+  tidyr::pivot_wider(names_from = `Series Name`,
+                     values_from = indicator_value) %>% 
+  dplyr::rename( country ="Country Name", access_fuels_pp = "Access to clean fuels and technologies for cooking (% of population)", access_electricity_pp = "Access to electricity (% of population)", co2_emissions_kt = "CO2 emissions (kt)", fossil_fuel_cons_pt = "Fossil fuel energy consumption (% of total)", water_stress = "Level of water stress: freshwater withdrawal as a proportion of available freshwater resources") %>% 
+  dplyr::mutate(Year = as.numeric(Year))
+```
+
+Let's make a chart of our cleaned data!
+
+```{r}
+ggplot(wb_indicators_tidy, aes(x = Year, y = co2_emissions_kt)) + 
+  geom_line(aes(color = country)) + 
+  theme(legend.position = "none")
+
+#The theme allows us to remove the legend
+```
