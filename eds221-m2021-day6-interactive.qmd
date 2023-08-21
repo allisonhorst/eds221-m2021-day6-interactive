@@ -1,0 +1,19 @@
+---
+title: "eds221-day6-warmup"
+format: html
+editor: visual
+---
+
+```{r}
+animals <- c("brown bear", "red bird", "yellow duck", "blue horse")
+
+
+for (i in 1:(length(animals) - 1)) {
+  print(paste(animals[i], animals[i], "what do you see? I see a", animals[i +1], "looking at me."))
+}
+
+# instead of sequence along because the length is less than the vector
+```
+
+```{}
+```

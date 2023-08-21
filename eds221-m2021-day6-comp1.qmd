@@ -1,0 +1,72 @@
+---
+title: "eds221-day6-comp1"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+```{r}
+wb_indicators <- read_csv(here("data", "wb_indicators.csv"), na = c("..", ""))
+```
+
+```{r}
+wb_indicators <- read_csv(here("data", "wb_indicators.csv"))
+```
+
+```{r}
+View(wb_indicators)
+```
+
+```{r}
+wb_indicators_long <- wb_indicators %>% 
+  pivot_longer(cols = `2001 [YR2001]`:`2020 [YR2020]`,
+               names_to = 'year',
+               values_to = 'indicator_value')
+```
+
+```{r}
+View(wb_indicators_long)
+```
+
+```{r}
+wb_indicators_separated <- wb_indicators_long %>% 
+  separate(col = 'year',
+           into = c("Year", "yr_chr"),
+                    sep = " ") %>% 
+  dplyr::select(-yr_chr, -`Country Code`, -`Series Code`)
+#select is for columns, filter is for rows
+```
+
+```{r}
+View(wb_indicators_separated)
+```
+
+```{r}
+wb_indicators_wide <- wb_indicators_separated %>% 
+  tidyr::drop_na(`Series Name`) %>% 
+pivot_wider(names_from = 'Series Name',
+              values_from = 'indicator_value') %>% 
+  dplyr::rename(Country = "Country Name", 
+                access_fuels_pp = "Access to clean fuels and technologies for cooking (% of population)",
+                access_electricity_pp = "Access to electricity (% of population)",
+                co2_emissions_kt = "CO2 emissions (kt)",
+                fossil_fuel_cons_pt = "Fossil fuel energy consumption (% of total)",
+                water_stress = "Level of water stress: freshwater withdrawal as a proportion of available freshwater resources") %>% 
+  dplyr::mutate(year = as.numeric(Year), co2_emissions_kt = as.numeric(co2_emissions_kt))
+    # new name then old name#
+```
+
+```{r}
+View(wb_indicators_wide)
+```
+
+```{r}
+ggplot(data = wb_indicators_wide, aes(x = year, y = co2_emissions_kt)) +
+  geom_line(aes(color = Country)) + 
+  theme(legend.position="none")
+```
