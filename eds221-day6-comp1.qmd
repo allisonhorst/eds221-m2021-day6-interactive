@@ -3,29 +3,78 @@ title: "eds221-day6-comp1"
 format: html
 editor: visual
 ---
-
-## Quarto
 ```{r}
 library(tidyverse)
 library(here)
 library(janitor)
 ```
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
+#read in the data
 ```{r}
-1 + 1
+wb_indicators <- read_csv(here::here("data", "wb_indicators.csv"), na = c("..", ""))
+
+```
+### pivot longer
+```{r}
+wb_indicators_long <- wb_indicators %>% 
+  pivot_longer(cols = `2001 [YR2001]`:`2020 [YR2020]`,
+               names_to = "year",
+               values_to = "indicator_value") #if you are referring to a column, you want to put it in quotes
 ```
 
-You can add options to executable code like this
 
+### pivot separate
 ```{r}
-#| echo: false
-2 * 2
+wb_indicators_clean <- wb_indicators_long %>% 
+  separate(col = "year", 
+           into = c("year", "year_chr"), sep = " ") %>% 
+  dplyr::select(-year_chr, -`Country Code`, -`Series Code`)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+### pivot wider
+```{r}
+wb_indicators_tidy <- wb_indicators_clean %>% 
+  tidyr::drop_na(`Series Name`) %>%
+  tidyr::pivot_wider(names_from = `Series Name`, 
+                     values_from = indicator_value)#what this does is that it deletes the entire row even with the data (use it wisely)
+
+```
+
+```{r}
+names(wb_indicators_tidy) <-  c("Country", 
+                                "Year", 
+                                "access_clean_fuel_pp", 
+                                "access_electricity_pp",
+                                "co2_emissions_kt", 
+                                "fossil_fuel_cons_pt",
+                                "water_stress") #this type of coding is only based on position
+
+
+wb_indicators_tidy <- wb_indicators_clean %>% 
+  tidyr::drop_na(`Series Name`) %>%
+  tidyr::pivot_wider(names_from = `Series Name`, 
+                     values_from = indicator_value) %>% 
+  dplyr::rename(country = `Country Name`, 
+                year = year, 
+                access_clean_fuel_pp = "Access to clean fuels and technologies for cooking (% of population)", 
+                access_electricity = "Access to electricity (% of population)", co2_emissions_kt =  "CO2 emissions (kt)", 
+                fossil_fuel_cons_pt =  "Fossil fuel energy consumption (% of total)", 
+                water_stress = "Level of water stress: freshwater withdrawal as a proportion of available freshwater resources") %>% 
+  dplyr::mutate(year = as.numeric(year))
+    #new name , = , old name
+    #it's better to code like this
+```
+
+### making a chart
+```{r}
+co2_year <- ggplot(data = wb_indicators_tidy, 
+                   aes(x = year, 
+                       y = co2_emissions_kt)) + 
+  geom_line(aes(color = country)) + 
+  theme(legend.position = "none")
+
+co2_year
+```
+
+
+
