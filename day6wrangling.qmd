@@ -1,0 +1,15 @@
+---
+title: "day6_wrangling"
+format: html
+editor: visual
+---
+```{r}
+book_animals <- c("brown bear", "red bird", "yellow duck", "blue horse")
+for (i in seq_along(book_animals)){
+  print(paste0(book_animals[i], ", ", book_animals[i], " what do you you see? I see a ", book_animals[i+1], " looking at me" ))
+}
+
+
+  
+```
+
