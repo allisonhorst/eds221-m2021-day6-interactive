@@ -1,0 +1,31 @@
+---
+title: "eds221-day6-warmup"
+format: html
+editor: visual
+---
+
+## Recreate text
+
+```{r}
+book <- c("brown bear", "red bird", "yellow duck", "blue horse")
+
+for(i in seq_along(book)){
+    print(paste(book[i], book[i], "what do you see? I see a", book[i + 1], "looking at me."))
+}
+#}
+
+for(i in 1:(length(book)-1)){
+  print(paste(book[i], book[i], "what do you see? I see a", book[i + 1], "looking at me."))
+}
+```
+
+
+
+
+
+
+
+
+
+
+
