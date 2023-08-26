@@ -1,0 +1,58 @@
+---
+title: "Day 6 Wrangling"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+## Pivots!
+
+```{r}
+wb_indicators <- read_csv(here::here("data", "wb_indicators.csv"), 
+                          na = c("..", "")) %>% 
+  pivot_longer(cols = 5:24,
+               names_to = "year",
+               values_to = "indicator_value") %>% 
+  separate(col = year, # separate values in year column into 2 different columns
+           into = c("year", "year_chr"),
+           sep = " ") %>% 
+  dplyr::select(-`year_chr`, -`Country Code`, -`Series Code`) %>% # delete these columns
+  tidyr::drop_na(`Series Name`) %>% # will drop the rows where there is na
+  pivot_wider(names_from = "Series Name",
+              values_from = "indicator_value") %>% 
+    clean_names() %>% 
+  rename(country = country_name,
+    access_clean_fuels_pp = access_to_clean_fuels_and_technologies_for_cooking_percent_of_population,
+         access_electricity_pp = access_to_electricity_percent_of_population,
+         fossil_fuel_cons_pt = fossil_fuel_energy_consumption_percent_of_total,
+         water_stress = level_of_water_stress_freshwater_withdrawal_as_a_proportion_of_available_freshwater_resources) %>% 
+  mutate(year = as.numeric(year)) # make year column numeric
+
+# replace the column names
+## only based on position RISKYYYYYYY
+
+# names(wb_indicators) <- c("country",
+#                           "year",
+#                           "access_clean_fuels_pp",
+#                           "access_electricity_pp",
+#                           "co2_emissions_kt",
+#                           "fossil_fuel_cons_pt",
+#                           "water_stress")
+```
+
+## Visualization
+
+```{r}
+ggplot(wb_indicators,
+       aes(x = year,
+           y = co2_emissions_kt,
+           color = country)) +
+  geom_line() +
+  theme(legend.position = "none")
+   
+```
